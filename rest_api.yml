@@ -1,1 +1,455 @@
+openapi: 3.0.0
 
+tags:
+  - name: Posts
+  - name: Subscriptions
+  - name: Engagement
+  - name: Feed
+  - name: Destinations
+
+info:
+  title: Travel Platform API
+  description: API для работы с приложением для путешественников
+  version: 1.0.0
+
+paths:
+  /api/v1/posts:
+    post:
+      summary: Создать новый пост о путешествии
+      description: Если пользователь не лайкал пост - лайк добавляется. Если пользователь лайкал пост - лакй удаляется
+      tags:
+        - Posts
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  maxLength: 1000
+                  example: "Текст поста"
+                photoUrls:
+                  type: array
+                  items:
+                    type: string
+                    items:
+                      type: string
+                      format: uri
+                    minItems: 1
+                    maxItems: 10
+                    example: ["https://cdn.example.com/photo1.jpg", "https://cdn.example.com/photo2.jpg"]
+                location:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123"
+                    name:
+                      type: string
+                      example: "Какое-то описание"
+                    latitude:
+                      type: number
+                      format: float
+                      example: 44.4444
+                    longitude:
+                      type: number
+                      format: float
+                      example: 33.3333
+                  required:
+                    - name
+              required:
+                - description
+                - photoUrls
+                - location
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        400:
+          description: Некорректные данные
+        401:
+          description: Пользователь не авторизован
+
+  /api/v1/users/{id}/subscribes:
+    post:
+      summary: Подписаться или отписаться от путешественника
+      description: Если нет подписки на пользователя - подкиска. Если есть подписка на пользователя - отписка
+      tags:
+        - Subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор путешественника
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscribed:
+                    type: boolean
+                    example: true
+                  subscribersCount:
+                    type: integer
+                    example: 10
+                required:
+                  - subscribed
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пользователь не найден  
+  
+  /api/v1/posts/{id}/like:
+    post:
+      summary: Поставить или убрать лайк с поста
+      description: Если пользователь не лайкал пост - лайк добавляется. Если пользователь лайкал пост - лайк удаляется
+      tags:
+        - Engagement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  liked:
+                    type: boolean
+                    example: true
+                  likesCount:
+                    type: integer
+                    example: 1
+                required:
+                  - liked
+                  - likesCount
+              examples:
+                response:
+                  value:
+                    liked: true
+                    likesCount: 1
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пост не найден
+          
+  /api/v1/posts/{id}/comments:
+    post:
+      summary: Добавить комменарий к посту
+      description: Добавляет комментарий к посту пользователя
+      tags:
+        - Engagement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: "Какой-то комментарий"
+              required:
+                - content
+      responses:
+        201:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          description: Некорректные данные
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пост не найден
+
+  /api/v1/feed/global:
+    get:
+      summary: Получить глобальную ленту путешественников
+      description: Возвращает глобальную ленту путешесвенников в обратном хронологическом порядке
+      tags:
+        - Feed
+      parameters:
+        - name: limit
+          in: query
+          description: Количество записей на странице (макс. 30)
+          schema:
+            type : integer
+            default: 10
+            minimum: 1
+            maximum: 30
+        - name: offset
+          in: query
+          description: Смещение для пагинации
+          schema:
+            type : integer
+            default: 0
+            minimum: 0
+      responses:
+        200:
+          description: Список постов
+        401:
+          description: Пользователь не авторизован
+
+  /api/v1/destinations/popular:
+    get:
+      summary: Получить список популярных мест для путешествий
+      description: Возвращает списко популярныхы мест для путешествий
+      tags:
+        - Destinations
+      parameters:
+        - name: limit
+          in: query
+          description: Количество возвращаемых мест (макс. 100)
+          schema:
+            type : integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        200:
+          description: Список популярных мест
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Destination'
+                  total:
+                    type: integer
+                    example: 150
+                required:
+                  - items
+                  - total
+        400:
+          description: Некорректные параметры запроса
+  
+  /api/v1/destinations/{id}/posts:
+    get:
+      summary: Получить посты, привязанные к конкретному месту
+      description: Возвращает список постов, привязанных к конкретному месту
+      tags:
+        - Destinations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор места
+        - name: limit
+          in: query
+          description: Количество постов на странице
+          schema:
+            type : integer
+            default: 20
+            minimum: 1
+            maximum: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Смещение для пагинации
+      responses:
+        200:
+          description: Список постов для указанного места
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  total:
+                    type: integer
+                    example: 87
+                  limit:
+                    type: integer
+                    example: 20
+                  offset:
+                    type: integer
+                    example: 0
+                required:
+                  - items
+                  - total
+                  - limit
+                  - offser
+        404:
+          description: Место не найдено
+      
+  /api/v1/feed/subscriptions:
+    get:
+      summary: Получить ленту по подписчикам
+      description: Возвращает ленту путешесвенников, на которых подписан текущий пользователь, в обратном хронологическом порядке
+      tags:
+        - Feed
+      parameters:
+        - name: limit
+          in: query
+          description: Количество записей на странице (макс. 30)
+          schema:
+            type : integer
+            default: 10
+            minimum: 1
+            maximum: 30
+        - name: offset
+          in: query
+          description: Смещение для пагинации
+          schema:
+            type : integer
+            default: 0
+            minimum: 0
+      responses:
+        200:
+          description: Список постов
+        401:
+          description: Пользователь не авторизован
+
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        authorId:
+          type: string
+          example: "456"
+        content:
+          type: string
+          example: "Какой-то комментарий"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-06-10T15:45:00Z"
+        postId:
+          type: string
+          example: "789"
+      required:
+        - id
+        - authorId
+        - authorName
+        - content
+        - createdAt
+        - postId
+        
+    Destination:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        name:
+          type: string
+          example: "Наименование постов"
+        country:
+          type: string
+          example: "Италия"
+        latitude:
+          type: number
+          format: float
+          example: 44.4444
+        longitude:
+          type: number
+          format: float
+          example: 33.3333
+        postCount:
+          type: integer
+          example: 1200
+        previewPhotoUrl:
+          type: string
+          format: uri
+          example: "https://cdn.travelapp.com.italy-review.jpg"
+      required:
+        - id
+        - name
+        - country
+        - latitude
+        - longitude
+        - postCount
+    
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        authorId:
+          type: string
+          example: "456"
+        authorName:
+          type: string
+          example: "Иванов Иван"
+        description:
+          type: string
+          example: "Какое-то описание"
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["https://cdn.example.com/photo1.jpg"]
+        location:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "123"
+            name:
+              type: string
+              example: "Наименование локации"
+            latitude:
+              type: number
+              format: float
+              example: 44.4444
+            longitude:
+              type: number
+              format: float
+              example: 33.3333
+        publishedAt:
+          type: string
+          format: date-time
+          example: "2024-06-12T11:00:00Z"
+      required:
+        - id
+        - authorId
+        - authorName
+        - description
+        - photoUrls
+        - location
+        - publishedAt
