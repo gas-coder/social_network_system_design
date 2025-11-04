@@ -1,0 +1,24 @@
+// Engagement Service - лайки и комментарии
+
+Table reactions {
+  user_id uuid [not null] // ID из User Service
+  post_id uuid [not null] // ID из Content Service
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (user_id, post_id) [unique]
+    (post_id)
+  }
+}
+
+Table comments {
+  id uuid [primary key]
+  post_id uuid [not null] // ID из Content Service
+  user_id uuid [not null] // ID из User Service
+  content text [not null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (post_id, created_at)
+  }
+}
