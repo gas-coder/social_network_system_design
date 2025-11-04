@@ -1,0 +1,22 @@
+// User Service - управление пользователями и подписками
+
+Table users {
+  id uuid [primary key]
+  username varchar [unique, not null]
+  display_name varchar [not null]
+  avatar_url varchar
+  bio text
+  created_at timestamp [default: `now()`]
+}
+
+Table subscriptions {
+  follower_id uuid [not null]
+  followee_id uuid [not null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (follower_id, followee_id) [unique]
+    (follower_id)
+    (followee_id)
+  }
+}

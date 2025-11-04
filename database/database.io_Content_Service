@@ -1,0 +1,29 @@
+// Content Service - посты, медиа, места посещения
+
+Table destinations {
+  id uuid [primary key]
+  name varchar [not null]
+  country varchar [not null]
+  city varchar
+  lat double precision
+  lng double precision
+  popularity_score integer [default: 0]
+  created_at timestamp [default: `now()`]
+}
+
+Table posts {
+  id uuid [primary key]
+  user_id uuid [not null] // ID из User Service
+  destination_id uuid [not null, ref: > destinations.id]
+  content text
+  created_at timestamp [default: `now()`]
+}
+
+Table media {
+  id uuid [primary key]
+  post_id uuid [not null, ref: > posts.id]
+  url varchar [not null] // URL в S3
+  media_type varchar [note: "'image'"]
+  order_index integer [default: 0]
+  created_at timestamp [default: `now()`]
+}
