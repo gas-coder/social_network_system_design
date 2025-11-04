@@ -1,0 +1,10 @@
+// Feed Service (Redis) - лента
+// Описание ключей
+
+Table feed_structure {
+  key_pattern varchar [note: "'user_feed:{user_id}'"]
+  data_type varchar [note: "Sorted Set"]
+  score double [note: "timestamp (в миллисекундах)"]
+  value varchar [note: "post_id (UUID из Content Service)"]
+  ttl varchar [note: "Бессрочно или по политике"]
+}
