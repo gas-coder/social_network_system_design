@@ -504,19 +504,27 @@ paths:
         500:
           description: Внутренняя ошибка сервера
 
-  /api/v1/posts/{postId}/media:
+  /api/v1/media:
     get:
-      summary: Получить медиафайлы поста 
-      description: Возвращает медиафайлы для поста
+      summary: Получить медиафайлы по идентификатору сущности 
+      description: Возвращает список медиафайлов, связанных с указанной сущностью (например, постом, комментарием и т.д.)
       tags:
         - Media
       parameters:
-        - name: postId
-          in: path
+        - name: entityId
+          in: query
           required: true
           schema:
             type: string
-          description: Идентификатор поста
+          description: Идентификатор сущности, к которой привязаны медиафайлы
+        - name: entityType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: 
+              - post   
+          description: Тип сущности (например, "post", "comment" и т.д.)
       responses:
         200:
           description: Список медиафайлов
@@ -527,7 +535,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Media'
         404:
-          description: Пост не найден или у поста нет медиа
+          description: Сущность не найдена или у неё нет медиафайлов
         500:
           description: Внутренняя ошибка сервера
 
