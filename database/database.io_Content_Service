@@ -27,3 +27,12 @@ Table media {
   order_index integer [default: 0]
   created_at timestamp [default: `now()`]
 }
+
+Table highways {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  destination_id_1 uuid [not null, ref: > destinations.id]
+  destination_id_2 uuid [not null, ref: > destinations.id]
+  name varchar [not null, note: "Название шоссе, например: 'M1', 'I-95', 'Трасса Р-297'"]
+  distance_km integer [not null, note: "Расстояние между городами в км"]
+  created_at timestamp [default: `now()`]
+}
