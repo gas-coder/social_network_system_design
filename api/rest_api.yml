@@ -1,0 +1,729 @@
+openapi: 3.0.0
+
+tags:
+  - name: Posts
+  - name: Subscriptions
+  - name: Engagement
+  - name: Feed
+  - name: Comments
+  - name: Reactions
+  - name: Media
+
+info:
+  title: Travel Platform API
+  description: API для работы с приложением для путешественников
+  version: 1.0.0
+
+paths:
+  /api/v1/posts:
+    post:
+      summary: Создать новый пост о путешествии
+      description: Если пользователь не лайкал пост - лайк добавляется. Если пользователь лайкал пост - лакй удаляется
+      tags:
+        - Posts
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  maxLength: 1000
+                  example: "Текст поста"
+                photoUrls:
+                  type: array
+                  items:
+                    type: string
+                    items:
+                      type: string
+                      format: uri
+                    minItems: 1
+                    maxItems: 10
+                    example: ["https://cdn.example.com/photo1.jpg", "https://cdn.example.com/photo2.jpg"]
+                location:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123"
+                    name:
+                      type: string
+                      example: "Какое-то описание"
+                    latitude:
+                      type: number
+                      format: float
+                      example: 44.4444
+                    longitude:
+                      type: number
+                      format: float
+                      example: 33.3333
+                  required:
+                    - name
+              required:
+                - description
+                - photoUrls
+                - location
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        400:
+          description: Некорректные данные
+        401:
+          description: Пользователь не авторизован
+        500:
+          description: Внутренняя ошибка сервера
+
+  /api/v1/users/{id}/subscribes:
+    post:
+      summary: Подписаться на путешественника
+      description: Создает подписку текущего пользователя на указанного путешественника
+      tags:
+        - Subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор путешественника
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscribed:
+                    type: boolean
+                    example: true
+                  subscribersCount:
+                    type: integer
+                    example: 10
+                required:
+                  - subscribed
+                  - subscribersCount
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пользователь не найден  
+        500:
+          description: Внутренняя ошибка сервера
+
+    delete:
+      summary: Отписаться от путешественника
+      description: Удаляет подписку текущего пользователя на указанного путешественника
+      tags:
+        - Subscriptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор путешественника
+      responses:
+        200:
+          description: Ок
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscribed:
+                    type: boolean
+                    example: false
+                  subscribersCount:
+                    type: integer
+                    example: 9
+                required:
+                  - subscribed
+                  - subscribersCount
+        400:
+          description: Некорректные данные
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Путешественник с указанным ID не найден
+        500:
+          description: Внутрення ошибка сервера
+  
+  /api/v1/posts/{id}/reaction:
+    post:
+      summary: Поставить лайк на пост
+      description: Создает лайк текущего пользователя у указанного поста
+      tags:
+        - Engagement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reaction:
+                    type: boolean
+                    example: true
+                  reactionsCount:
+                    type: integer
+                    example: 1
+                required:
+                  - reaction
+                  - reactionsCount
+              examples:
+                response:
+                  value:
+                    reaction: true
+                    reactionsCount: 1
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пост не найден
+        500:
+          description: Внутренняя ошибка сервера
+          
+    delete:
+      summary: Убрать реакцию с поста
+      description: Удаляет лайк текущего пользователя с указанного поста
+      tags:
+        - Engagement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reaction:
+                    type: boolean
+                    example: false
+                  reactionsCount:
+                    type: integer
+                    example: 0
+                required:
+                  - reaction
+                  - reactionsCount
+              examples:
+                response:
+                  value:
+                    reaction: false
+                    reactionsCount: 0
+        400:
+          description: Невозможно удалить реакцию 
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пост не найден
+        500:
+          description: Внутренняя ошибка сервера   
+          
+  /api/v1/posts/{id}/comments:
+    post:
+      summary: Добавить комменарий к посту
+      description: Добавляет комментарий к посту пользователя
+      tags:
+        - Engagement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: "Какой-то комментарий"
+              required:
+                - content
+      responses:
+        201:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          description: Некорректные данные
+        401:
+          description: Пользователь не авторизован
+        404:
+          description: Пост не найден
+        500:
+          description: Внутренняя ошибка сервера
+
+  /api/v1/posts:
+    get:
+      summary: Получить список постов с возможностью фильтрации
+      description: 
+        Возвращает список постов
+        - Если указан `destinationId`, возвращаются посты, привязанные к этому месту
+        - Если `destinationId` не указан — возвращается глобальная лента (все посты)
+        - Если указан `feed=popular-destinations` — возвращает посты из популярных мест
+        Поддерживает пагинацию.
+      tags:
+        - Posts
+      parameters:
+        - name: destinationId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Идентификатор места. Если не указан — возвращаются все посты
+        - name: feed
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: 
+              - popular-destinations
+          description: Специальные типы лент. Например, "popular-destinations" — посты из популярных мест.
+        - name: limit
+          in: query
+          description: Количество постов на странице
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Смещение для пагинации
+      responses:
+        200:
+          description: Список постов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  total:
+                    type: integer
+                    example: 150
+                  limit:
+                    type: integer
+                    example: 20
+                  offset:
+                    type: integer
+                    example: 0
+                required:
+                  - items
+                  - total
+                  - limit
+                  - offset
+        400:
+          description: Некорректные параметры запроса
+        404:
+          description: Указанное место не найдено
+        500:
+          description: Внутренняя ошибка сервера  
+  
+  /api/v1/feed/subscriptions:
+    get:
+      summary: Получить ленту по подписчикам
+      description: Возвращает ленту путешесвенников, на которых подписан текущий пользователь, в обратном хронологическом порядке
+      tags:
+        - Feed
+      parameters:
+        - name: limit
+          in: query
+          description: Количество записей на странице (макс. 30)
+          schema:
+            type : integer
+            default: 10
+            minimum: 1
+            maximum: 30
+        - name: offset
+          in: query
+          description: Смещение для пагинации
+          schema:
+            type : integer
+            default: 0
+            minimum: 0
+      responses:
+        200:
+          description: Список постов
+        401:
+          description: Пользователь не авторизован
+        500:
+          description: Внутренняя ошибка сервера
+
+  /api/v1/posts/{postId}/comments:
+    get:
+      summary: Получить комментарии к посту
+      description: Возвращает комментарии, созданные к посту
+      tags:
+        - Comments
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Количество комментариев на странице
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Смещение для пагинации
+      responses:
+        200:
+          description: Список комментариев
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  total:
+                    type: integer
+                    example: 42
+                  limit:
+                    type: integer
+                    example: 20
+                  offset:
+                    type: integer
+                    example: 0
+                required: 
+                  - items
+                  - total
+                  - limit
+                  - offset
+        404:
+          description: Пост не найден
+        500:
+          description: Внутренняя ошибка сервера
+
+  /api/v1/posts/{postId}/reactions:
+    get:
+      summary: Получить реакции (лайки) на пост
+      description: Возвращает лайки к посту
+      tags:
+        - Reactions
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор поста
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+          description: Максимальное количество реакций 
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Смещение для пагинации
+      responses:
+        200:
+          description: Список реакций
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reaction'
+                  total:
+                    type: integer
+                    example: 128
+                  limit:
+                    type: integer
+                    example: 50
+                  offset:
+                    type: integer
+                    example: 0
+                required: 
+                  - items
+                  - total
+                  - limit
+                  - offset
+        404:
+          description: Пост не найден
+        500:
+          description: Внутренняя ошибка сервера
+
+  /api/v1/media:
+    get:
+      summary: Получить медиафайлы по идентификатору сущности 
+      description: Возвращает список медиафайлов, связанных с указанной сущностью (например, постом, комментарием и т.д.)
+      tags:
+        - Media
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Идентификатор сущности, к которой привязаны медиафайлы
+        - name: entityType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: 
+              - post   
+          description: Тип сущности (например, "post", "comment" и т.д.)
+      responses:
+        200:
+          description: Список медиафайлов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Media'
+        404:
+          description: Сущность не найдена или у неё нет медиафайлов
+        500:
+          description: Внутренняя ошибка сервера
+
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        authorId:
+          type: string
+          example: "456"
+        content:
+          type: string
+          example: "Какой-то комментарий"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-06-10T15:45:00Z"
+        postId:
+          type: string
+          example: "789"
+      required:
+        - id
+        - authorId
+        - authorName
+        - content
+        - createdAt
+        - postId
+    
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        authorId:
+          type: string
+          example: "456"
+        authorName:
+          type: string
+          example: "Иванов Иван"
+        description:
+          type: string
+          example: "Какое-то описание"
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: 
+            - "https://cdn.example.com/photo1.jpg"
+        location:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "123"
+            name:
+              type: string
+              example: "Наименование локации"
+            latitude:
+              type: number
+              format: float
+              example: 44.4444
+            longitude:
+              type: number
+              format: float
+              example: 33.3333
+        publishedAt:
+          type: string
+          format: date-time
+          example: "2024-06-12T11:00:00Z"
+      required:
+        - id
+        - authorId
+        - authorName
+        - description
+        - photoUrls
+        - location
+        - publishedAt
+        
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: 
+        - id
+        - author
+        - content
+        - createdAt
+
+    Reaction:
+      type: object
+      properties:
+        userId:
+          type: string
+        type:
+          type: string
+          example: "like"
+        createdAt:
+          type: string
+          format: date-time
+      required: 
+        - userId
+        - type
+
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+        type:
+          type: string
+          enum: 
+            - image
+            - video
+        width:
+          type: integer
+        height:
+          type: integer
+    User:
+      type: object
+      description: Информация о пользователе (путешественнике)
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "usr_5f8e3a1b2c9d"
+          description: Уникальный идентификатор пользователя
+        username:
+          type: string
+          example: "alex_traveler"
+          description: Уникальное имя пользователя
+        displayName:
+          type: string
+          example: "Алексей Петров"
+          description: Отображаемое имя
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/avatars/alex.jpg"
+          description: Ссылка на аватар 
+        isVerified:
+          type: boolean
+          example: true
+          description: Подтверждён ли аккаунт (галочка верификации)
+        bio:
+          type: string
+          nullable: true
+          example: "Люблю горы, море и старые города"
+          description: Краткая биография
+        followersCount:
+          type: integer
+          minimum: 0
+          example: 142
+          description: Количество подписчиков
+        followingCount:
+          type: integer
+          minimum: 0
+          example: 87
+          description: Количество подписок
+        postsCount:
+          type: integer
+          minimum: 0
+          example: 23
+          description: Количество опубликованных постов
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-05-12T10:30:00Z"
+          description: Дата регистрации
+      required:
+        - id
+        - username
+        - displayName
+      
