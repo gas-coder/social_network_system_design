@@ -178,3 +178,5 @@ Hosts_with_replication = 1 * 3 = 3
 Hosts = 1/1 = 1 
 Hosts_with_replication =1 * 3 = 3
 
+![System context diagram](social_network_system_design/images/context.png)
+
