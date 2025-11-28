@@ -184,4 +184,4 @@ Level 1. System context diagram
 
 Level 2. System container diagram
 
-![System container diagram](images/container.png)
+![System container diagram](images/container.svg)
