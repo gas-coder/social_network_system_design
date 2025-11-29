@@ -7,7 +7,6 @@ Table destinations {
   city varchar
   lat double precision
   lng double precision
-  popularity_score integer [default: 0]
   created_at timestamp [default: `now()`]
 }
 
@@ -26,4 +25,20 @@ Table media {
   media_type varchar [note: "'image'"]
   order_index integer [default: 0]
   created_at timestamp [default: `now()`]
+}
+
+Table highways {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  destination_id_1 uuid [not null, ref: > destinations.id]
+  destination_id_2 uuid [not null, ref: > destinations.id]
+  name varchar [not null, note: "Название шоссе, например: 'M1', 'I-95', 'Трасса Р-297'"]
+  distance_km integer [not null, note: "Расстояние между городами в км"]
+  created_at timestamp [default: `now()`]
+}
+
+Table popular_destinations {
+  destination_id uuid [primary key, ref: > destinations.id]
+  post_count integer [default: 0, note: "Количество постов о месте"]
+  reaction_count integer [default: 0, note: "Сумма реакций (лайков и т.п.) под постами о месте"]
+  last_updated timestamp [default: `now()`]
 }
