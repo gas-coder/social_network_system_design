@@ -130,11 +130,11 @@ Disks max (0,05, 0,06, 0,047) = 1
 Трафик. Поиск и просмотр постов/мест (медиа) - 3 819 МБ/с
 
 Capacity = 470 МБ/с * 86 400 * 365 = 14 822 ТБ
-SSD:
-Disk_for_capacity =  14 822 ТБ/ 90 ТБ = 165  
-Disks_for_throughput = 6 511 / 500 МБ/с = 13 
-Disks_for_iops = 47 / 1 000 = 0,047
-Disks max (165, 13, 0,047) = 165
+HDD:
+Disk_for_capacity =  14 822 ТБ/ 30 ТБ = 494  
+Disks_for_throughput = 6 511 / 100 МБ/с = 66 
+Disks_for_iops = 47 / 100 = 0,47
+Disks max (494, 66, 0,47) = 494
 
 Реакции.
 
