@@ -1,1 +1,9 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
+Person(user, "Пользователь", "Путешественник, использующий мобильное приложение или браузер")
+
+System(social_travel_network, "Социальная сеть путешественников", "Платформа для публикации постов, подписок, лайков, комментариев и поиска мест")
+
+Rel(user, social_travel_network, "Взаимодействует через мобильное приложение или веб", "HTTPS")
+@enduml
