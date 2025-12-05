@@ -1,1 +1,44 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
+Person(user, "Пользователь", "Путешественник, использующий мобильное приложение или браузер")
+
+System_Boundary(social_travel_network_boundary, "Социальная сеть путешественников") {
+
+    ' Клиенты
+    Container(mobile_app, "Мобильное приложение", "iOS/Android", "Клиенты для взаимодействия с системой")
+    Container(web_frontend, "Веб-интерфейс", "React/Vue", "Браузерный интерфейс")
+
+    ' API шлюз
+    Container(api_gateway, "API Gateway", "Kong / Spring Cloud Gateway", "Единая точка входа, маршрутизация, аутентификация")
+
+    ' Микросервисы (в точном соответствии с ТЗ) 
+    Container(content_service, "Content Service", "Java/Go", "Управление постами, медиафайлами и местами путешествий")
+    Container(engagement_service, "Engagement Service", "Java/Go", "Обработка лайков и комментариев")
+    Container(user_service, "User Service", "Java/Go", "Управление профилями и подписками")
+
+    ' Хранилища
+    ContainerDb(content_db, "Content DB", "PostgreSQL + Object Storage", "Посты, фото, геолокации мест")
+    ContainerDb(engagement_db, "Engagement DB", "PostgreSQL / Redis", "Лайки и комментарии")
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Профили пользователей и граф подписок")
+
+}
+
+' Связи от пользователя к клиентам
+Rel(user, mobile_app, "Использует", "HTTPS")
+Rel(user, web_frontend, "Использует", "HTTPS")
+
+' Клиенты → API Gateway 
+Rel(mobile_app, api_gateway, "Вызывает API", "HTTPS")
+Rel(web_frontend, api_gateway, "Вызывает API", "HTTPS")
+
+' API Gateway → Микросервисы 
+Rel(api_gateway, content_service, "Передаёт запросы", "HTTP/gRPC")
+Rel(api_gateway, engagement_service, "Передаёт запросы", "HTTP/gRPC")
+Rel(api_gateway, user_service, "Передаёт запросы", "HTTP/gRPC")
+
+' Микросервисы → Базы данных
+Rel(content_service, content_db, "Читает/пишет", "SQL / S3 API")
+Rel(engagement_service, engagement_db, "Читает/пишет", "SQL / Redis API")
+Rel(user_service, user_db, "Читает/пишет", "SQL")
+@enduml
