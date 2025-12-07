@@ -1,8 +1,0 @@
-// Discovery Service - популярные места
-
-Table popular_destinations {
-  destination_id uuid [primary key] // ID из Content Service
-  post_count integer [default: 0]
-  reaction_count integer [default: 0]
-  last_updated timestamp [default: `now()`]
-}

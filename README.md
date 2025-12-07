@@ -130,11 +130,11 @@ Disks max (0,05, 0,06, 0,047) = 1
 Трафик. Поиск и просмотр постов/мест (медиа) - 3 819 МБ/с
 
 Capacity = 470 МБ/с * 86 400 * 365 = 14 822 ТБ
-SSD:
-Disk_for_capacity =  14 822 ТБ/ 90 ТБ = 165  
-Disks_for_throughput = 6 511 / 500 МБ/с = 13 
-Disks_for_iops = 47 / 1 000 = 0,047
-Disks max (165, 13, 0,047) = 165
+HDD:
+Disk_for_capacity =  14 822 ТБ/ 30 ТБ = 494  
+Disks_for_throughput = 6 511 / 100 МБ/с = 66 
+Disks_for_iops = 47 / 100 = 0,47
+Disks max (494, 66, 0,47) = 494
 
 Реакции.
 
@@ -159,4 +159,22 @@ Disk_for_capacity =  5 ТБ/ 2 ТБ = 2,5
 Disks_for_throughput = 1,6 / 500 МБ/с = 0,0032 
 Disks_for_iops = 139 / 1 000 = 0,139
 Disks max (2,5, 0,0032, 0,136) = 3
+
+Расчёт хостов (на 1 год, с репликацией):
+Посты (мета)
+Hosts = 1/1 = 1
+Hosts_with_replication = 1 * 3 = 3
+
+Посты (медиа)
+Hosts = 165/1 = 165
+Hosts_with_replication = 165 * 3 = 495
+Для старых постов можно снизить replication factor до 2, чтобы сократить хосты на 30-50%
+
+Комментарии
+Hosts = 3/1 = 1 
+Hosts_with_replication = 1 * 3 = 3 
+
+Реакции
+Hosts = 1/1 = 1 
+Hosts_with_replication =1 * 3 = 3
 

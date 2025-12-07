@@ -21,6 +21,7 @@ Table posts {
 Table media {
   id uuid [primary key]
   post_id uuid [not null, ref: > posts.id]
+  user_id uuid [not null] // ID из User Service
   url varchar [not null] // URL в S3
   media_type varchar [note: "'image'"]
   order_index integer [default: 0]
@@ -42,3 +43,21 @@ Table popular_destinations {
   reaction_count integer [default: 0, note: "Сумма реакций (лайков и т.п.) под постами о месте"]
   last_updated timestamp [default: `now()`]
 }
+
+Таблица destinations
+Шардинг не требуется
+
+Таблица posts
+Шардинг - по user_id
+
+Таблица media
+Шардинг - по user_id
+
+Таблица highways
+Шардинг не требуется
+
+Таблица popular_destinations
+Шардинг не требуется
+
+Асинхронная мастер-реплика (master-slave) на соответствующих шардах.
+Коэффициент репликации: 3 копии (1 мастер + 2 реплики) — для отказоустойчивости и балансировки чтения.
