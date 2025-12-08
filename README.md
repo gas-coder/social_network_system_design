@@ -178,3 +178,10 @@ Hosts_with_replication = 1 * 3 = 3
 Hosts = 1/1 = 1 
 Hosts_with_replication =1 * 3 = 3
 
+Level 1. System context diagram
+
+![System context diagram](images/context.svg)
+
+Level 2. System container diagram
+
+![System container diagram](images/container.svg)
