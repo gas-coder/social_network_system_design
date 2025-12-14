@@ -1,0 +1,60 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Путешественник, использующий мобильное приложение или браузер")
+
+System_Boundary(social_travel_network_boundary, "Социальная сеть путешественников") {
+
+    ' Клиенты
+    Container(mobile_app, "Мобильное приложение", "iOS/Android", "Клиенты для взаимодействия с системой")
+    Container(web_frontend, "Веб-интерфейс", "React", "Браузерный интерфейс")
+
+    ' API шлюз
+    Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Единая точка входа, маршрутизация, аутентификация")
+
+    ' Микросервисы
+    Container(content_service, "Content Service", "Java", "Управление постами и местами путешествий")
+    Container(media_service, "Media Service", "Go", "Загрузка, обработка и хранение медиафайлов (изображений, видео)")
+    Container(engagement_service, "Engagement Service", "Java", "Обработка лайков и комментариев")
+    Container(user_service, "User Service", "Java", "Управление профилями и подписками")
+    Container(feed_service, "Feed Service", "Java", "Формирование и кэширование ленты пользователя")
+
+    ' Хранилища
+    ContainerDb(content_db, "Content DB", "PostgreSQL", "Посты и геолокации мест")
+    ContainerDb(media_storage, "Media Storage", "S3", "Хранение исходных и обработанных медиафайлов")
+    ContainerDb(engagement_db, "Engagement DB", "PostgreSQL", "Лайки и комментарии")
+    ContainerDb(user_db, "User DB", "PostgreSQL", "Профили пользователей и граф подписок")
+    ContainerDb(feed_cache, "Feed Cache", "Redis", "Кэш ленты: список post_id + метаданные для каждого пользователя")
+    ContainerDb(stats_store, "Stats Store", "Redis", "Агрегаты: популярные места, счётчики реакций и постов")
+
+}
+
+' Связи от пользователя к клиентам
+Rel(user, mobile_app, "Использует", "HTTPS")
+Rel(user, web_frontend, "Использует", "HTTPS")
+
+' Клиенты → API Gateway 
+Rel(mobile_app, api_gateway, "Вызывает API", "HTTPS")
+Rel(web_frontend, api_gateway, "Вызывает API", "HTTPS")
+
+' API Gateway → Микросервисы 
+Rel(api_gateway, content_service, "Работа с постами", "HTTP")
+Rel(api_gateway, media_service, "Загрузка/получение медиа", "HTTP")
+Rel(api_gateway, engagement_service, "Лайки и комментарии", "HTTP")
+Rel(api_gateway, user_service, "Профиль и подписки", "HTTP")
+Rel(api_gateway, feed_service, "Получение ленты", "HTTP")
+
+' Внутренние взаимодействия между сервисами
+Rel(feed_service, user_service, "Получает подписки", "gRPC")
+Rel(feed_service, content_service, "Получает метаданные постов", "gRPC")
+Rel(feed_service, engagement_service, "Получает реакции", "gRPC")
+Rel(content_service, media_service, "Получает URL медиа", "HTTP")
+
+' Микросервисы → Базы данных
+Rel(content_service, content_db, "Читает/пишет посты", "SQL")
+Rel(media_service, media_storage, "Загружает/извлекает файлы", "S3 API")
+Rel(engagement_service, engagement_db, "Читает/пишет лайки и комментарии", "SQL")
+Rel(user_service, user_db, "Читает/пишет профили и подписки", "SQL")
+Rel(feed_service, feed_cache, "Кэширует и извлекает ленту пользователя", "Redis")
+Rel(content_service, stats_store, "Обновляет счётчики популярности мест", "Redis")
+@enduml
