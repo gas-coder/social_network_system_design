@@ -12,13 +12,15 @@ System_Boundary(social_travel_network_boundary, "Социальная сеть �
     ' API шлюз
     Container(api_gateway, "API Gateway", "Kong / Spring Cloud Gateway", "Единая точка входа, маршрутизация, аутентификация")
 
-    ' Микросервисы (в точном соответствии с ТЗ) 
-    Container(content_service, "Content Service", "Java/Go", "Управление постами, медиафайлами и местами путешествий")
+    ' Микросервисы
+    Container(content_service, "Content Service", "Java/Go", "Управление постами и местами путешествий")
+    Container(media_service, "Media Service", "Go/Python", "Загрузка, обработка и хранение медиафайлов (изображений, видео)")
     Container(engagement_service, "Engagement Service", "Java/Go", "Обработка лайков и комментариев")
     Container(user_service, "User Service", "Java/Go", "Управление профилями и подписками")
 
     ' Хранилища
-    ContainerDb(content_db, "Content DB", "PostgreSQL + Object Storage", "Посты, фото, геолокации мест")
+    ContainerDb(content_db, "Content DB", "PostgreSQL + Object Storage", "Посты, геолокации мест")
+    ContainerDb(media_storage, "Media Storage", "S3 / MinIO", "Хранение исходных и обработанных медиафайлов")
     ContainerDb(engagement_db, "Engagement DB", "PostgreSQL / Redis", "Лайки и комментарии")
     ContainerDb(user_db, "User DB", "PostgreSQL", "Профили пользователей и граф подписок")
 
@@ -34,11 +36,16 @@ Rel(web_frontend, api_gateway, "Вызывает API", "HTTPS")
 
 ' API Gateway → Микросервисы 
 Rel(api_gateway, content_service, "Передаёт запросы", "HTTP/gRPC")
+Rel(api_gateway, media_service, "Передаёт запросы", "HTTP/gRPC")
 Rel(api_gateway, engagement_service, "Передаёт запросы", "HTTP/gRPC")
 Rel(api_gateway, user_service, "Передаёт запросы", "HTTP/gRPC")
 
+' Внутренние взаимодействия между сервисами
+Rel(content_service, media_service, "Запрашивает метаданные медиа", "HTTP/gRPC")
+
 ' Микросервисы → Базы данных
-Rel(content_service, content_db, "Читает/пишет", "SQL / S3 API")
+Rel(content_service, content_db, "Читает/пишет", "SQL")
+Rel(media_service, media_storage, "Хранит/извлекает файлы", "S3 API")
 Rel(engagement_service, engagement_db, "Читает/пишет", "SQL / Redis API")
 Rel(user_service, user_db, "Читает/пишет", "SQL")
 @enduml
